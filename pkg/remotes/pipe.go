@@ -14,6 +14,7 @@ import (
 
 // Pipe given a source resolver, resolve the passed in ref to a desc
 // return a fetcher and pusher, As you write to the pusher, the fetcher will receive the result
+// Make sure you `go` to a different thread for writing, since writing will only happen after at least one read
 func Pipe(ctx context.Context, source remotes.Resolver, ref string) (remotes.Fetcher, remotes.Pusher, error) {
 	r := &pipeResolver{Resolver: source}
 
@@ -126,6 +127,7 @@ func (p *pipeWriter) Write(data []byte) (n int, err error) {
 	}
 
 	p.status.Total += int64(n)
+	p.status.Offset = p.status.Total
 	p.status.UpdatedAt = time.Now()
 	return n, err
 }
